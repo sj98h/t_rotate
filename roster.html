@@ -1,863 +1,904 @@
 <!DOCTYPE html>
 <html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#667eea">
-    <meta name="description" content="명부 관리 앱 - 이름과 숫자를 관리하세요">
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#667eea" />
+    <meta
+      name="description"
+      content="명부 관리 앱 - 이름과 숫자를 관리하세요" />
+    <link rel="manifest" href="manifest.json" />
+    <link rel="apple-touch-icon" href="icon-192.png" />
     <title>T 명부 관리</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Malgun Gothic", sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
 
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
+
+      h1 {
+        color: #333;
+        margin-bottom: 30px;
+        text-align: center;
+        font-size: 28px;
+      }
+
+      .input-section {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+      }
+
+      input[type="text"] {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: border-color 0.3s;
+        min-width: 0;
+      }
+
+      input[type="text"]:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .add-btn {
+        padding: 12px 20px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+        white-space: nowrap;
+      }
+
+      .add-btn:hover {
+        background: #5568d3;
+      }
+
+      .roster-list {
+        list-style: none;
+      }
+
+      .roster-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        margin-bottom: 12px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: move;
+        position: relative;
+      }
+
+      .roster-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .roster-item.dragging {
+        opacity: 0.4;
+        transform: scale(1.05) rotate(2deg);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      }
+
+      .roster-item::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: #667eea;
+        border-radius: 2px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        top: -8px;
+        box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
+      }
+
+      .roster-item::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: #667eea;
+        border-radius: 2px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        bottom: -8px;
+        box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
+      }
+
+      .roster-item.show-line-top::before {
+        opacity: 1;
+      }
+
+      .roster-item.show-line-bottom::after {
+        opacity: 1;
+      }
+
+      .drag-handle {
+        margin-right: 12px;
+        color: #adb5bd;
+        font-size: 20px;
+        cursor: grab;
+      }
+
+      .drag-handle:active {
+        cursor: grabbing;
+      }
+
+      .name-section {
+        flex: 1;
+        font-size: 18px;
+        font-weight: 500;
+        color: #333;
+        word-break: break-word;
+      }
+
+      .counter-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-shrink: 0;
+      }
+
+      .counter-value {
+        min-width: 40px;
+        text-align: center;
+        font-size: 20px;
+        font-weight: 600;
+        color: #667eea;
+      }
+
+      .counter-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        border-radius: 8px;
+        font-size: 20px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .minus-btn {
+        background: #ff6b6b;
+        color: white;
+      }
+
+      .minus-btn:hover {
+        background: #ee5a52;
+        transform: scale(1.1);
+      }
+
+      .plus-btn {
+        background: #51cf66;
+        color: white;
+      }
+
+      .plus-btn:hover {
+        background: #40c057;
+        transform: scale(1.1);
+      }
+
+      .delete-btn {
+        width: 36px;
+        height: 36px;
+        background: #dee2e6;
+        color: #495057;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-left: 10px;
+      }
+
+      .delete-btn:hover {
+        background: #495057;
+        color: white;
+        transform: scale(1.1);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #868e96;
+        font-size: 16px;
+      }
+
+      .stats {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 2px solid #e9ecef;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+
+      .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #667eea;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        color: #868e96;
+        margin-top: 5px;
+      }
+
+      .share-btn {
+        padding: 12px 24px;
+        background: #20c997;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+        margin-right: 10px;
+      }
+
+      .share-btn:hover {
+        background: #12b886;
+      }
+
+      .button-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+
+      .group-btn {
+        padding: 12px 16px;
+        background: #4c6ef5;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+        white-space: nowrap;
+      }
+
+      .group-btn:hover {
+        background: #3b5bdb;
+      }
+
+      .paste-btn {
+        padding: 12px 16px;
+        background: #7950f2;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+        white-space: nowrap;
+      }
+
+      .paste-btn:hover {
+        background: #6741d9;
+      }
+
+      .share-btn {
+        padding: 12px 16px;
+        background: #20c997;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.3s;
+        white-space: nowrap;
+      }
+
+      .share-btn:hover {
+        background: #12b886;
+      }
+
+      .reset-btn {
+        padding: 12px 16px;
+        background: #ff6b6b;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .reset-btn:hover {
+        background: #ee5a52;
+      }
+
+      .install-btn {
+        padding: 12px 16px;
+        background: #f59f00;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+        display: none;
+      }
+
+      .install-btn:hover {
+        background: #f08c00;
+      }
+
+      .install-btn.show {
+        display: block;
+      }
+
+      /* 모바일 반응형 */
+      @media (max-width: 600px) {
         .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          padding: 20px;
         }
 
         h1 {
-            color: #333;
-            margin-bottom: 30px;
-            text-align: center;
-            font-size: 28px;
-        }
-
-        .input-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-
-        input[type="text"] {
-            flex: 1;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: border-color 0.3s;
-            min-width: 0;
-        }
-
-        input[type="text"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .add-btn {
-            padding: 12px 20px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-            white-space: nowrap;
-        }
-
-        .add-btn:hover {
-            background: #5568d3;
-        }
-
-        .roster-list {
-            list-style: none;
-        }
-
-        .roster-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            background: #f8f9fa;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            cursor: move;
-            position: relative;
-        }
-
-        .roster-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        .roster-item.dragging {
-            opacity: 0.4;
-            transform: scale(1.05) rotate(2deg);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-        }
-
-        .roster-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: #667eea;
-            border-radius: 2px;
-            opacity: 0;
-            transition: opacity 0.2s;
-            top: -8px;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
-        }
-
-        .roster-item::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: #667eea;
-            border-radius: 2px;
-            opacity: 0;
-            transition: opacity 0.2s;
-            bottom: -8px;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.6);
-        }
-
-        .roster-item.show-line-top::before {
-            opacity: 1;
-        }
-
-        .roster-item.show-line-bottom::after {
-            opacity: 1;
-        }
-
-        .drag-handle {
-            margin-right: 12px;
-            color: #adb5bd;
-            font-size: 20px;
-            cursor: grab;
-        }
-
-        .drag-handle:active {
-            cursor: grabbing;
-        }
-
-        .name-section {
-            flex: 1;
-            font-size: 18px;
-            font-weight: 500;
-            color: #333;
-            word-break: break-word;
-        }
-
-        .counter-section {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-shrink: 0;
-        }
-
-        .counter-value {
-            min-width: 40px;
-            text-align: center;
-            font-size: 20px;
-            font-weight: 600;
-            color: #667eea;
-        }
-
-        .counter-btn {
-            width: 36px;
-            height: 36px;
-            border: none;
-            border-radius: 8px;
-            font-size: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .minus-btn {
-            background: #ff6b6b;
-            color: white;
-        }
-
-        .minus-btn:hover {
-            background: #ee5a52;
-            transform: scale(1.1);
-        }
-
-        .plus-btn {
-            background: #51cf66;
-            color: white;
-        }
-
-        .plus-btn:hover {
-            background: #40c057;
-            transform: scale(1.1);
-        }
-
-        .delete-btn {
-            width: 36px;
-            height: 36px;
-            background: #dee2e6;
-            color: #495057;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-left: 10px;
-        }
-
-        .delete-btn:hover {
-            background: #495057;
-            color: white;
-            transform: scale(1.1);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #868e96;
-            font-size: 16px;
-        }
-
-        .stats {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 30px;
-            padding-top: 30px;
-            border-top: 2px solid #e9ecef;
-        }
-
-        .stat-item {
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 28px;
-            font-weight: 700;
-            color: #667eea;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: #868e96;
-            margin-top: 5px;
-        }
-
-        .share-btn {
-            padding: 12px 24px;
-            background: #20c997;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-            margin-right: 10px;
-        }
-
-        .share-btn:hover {
-            background: #12b886;
+          font-size: 24px;
         }
 
         .button-group {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 8px;
-            margin-bottom: 20px;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 8px;
         }
 
-        .group-btn {
-            padding: 12px 16px;
-            background: #4c6ef5;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-            white-space: nowrap;
-        }
-
-        .group-btn:hover {
-            background: #3b5bdb;
-        }
-
-        .paste-btn {
-            padding: 12px 16px;
-            background: #7950f2;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-            white-space: nowrap;
-        }
-
-        .paste-btn:hover {
-            background: #6741d9;
-        }
-
-        .share-btn {
-            padding: 12px 16px;
-            background: #20c997;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s;
-            white-space: nowrap;
-        }
-
-        .share-btn:hover {
-            background: #12b886;
-        }
-
-        .reset-btn {
-            padding: 12px 16px;
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            white-space: nowrap;
-        }
-
-        .reset-btn:hover {
-            background: #ee5a52;
-        }
-
+        .group-btn,
+        .paste-btn,
+        .share-btn,
+        .reset-btn,
         .install-btn {
-            padding: 12px 16px;
-            background: #f59f00;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            white-space: nowrap;
-            display: none;
+          padding: 10px 12px;
+          font-size: 13px;
         }
 
-        .install-btn:hover {
-            background: #f08c00;
+        .name-section {
+          font-size: 16px;
         }
 
-        .install-btn.show {
-            display: block;
+        .counter-section {
+          gap: 10px;
         }
 
-        /* 모바일 반응형 */
-        @media (max-width: 600px) {
-            .container {
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
-
-            .button-group {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 8px;
-            }
-
-            .group-btn, .paste-btn, .share-btn, .reset-btn, .install-btn {
-                padding: 10px 12px;
-                font-size: 13px;
-            }
-
-            .name-section {
-                font-size: 16px;
-            }
-
-            .counter-section {
-                gap: 10px;
-            }
-
-            .counter-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 18px;
-            }
-
-            .counter-value {
-                min-width: 32px;
-                font-size: 18px;
-            }
-
-            .delete-btn {
-                width: 32px;
-                height: 32px;
-                margin-left: 5px;
-            }
+        .counter-btn {
+          width: 32px;
+          height: 32px;
+          font-size: 18px;
         }
 
-        @media (max-width: 400px) {
-            .button-group {
-                grid-template-columns: 1fr;
-            }
+        .counter-value {
+          min-width: 32px;
+          font-size: 18px;
         }
 
-        /* 모달 스타일 */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.3s;
+        .delete-btn {
+          width: 32px;
+          height: 32px;
+          margin-left: 5px;
         }
+      }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+      @media (max-width: 400px) {
+        .button-group {
+          grid-template-columns: 1fr;
         }
+      }
 
-        .modal-content {
-            background-color: white;
-            margin: 5% auto;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            animation: slideIn 0.3s;
-        }
+      /* 모달 스타일 */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.3s;
+      }
 
-        @keyframes slideIn {
-            from {
-                transform: translateY(-50px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
         }
+        to {
+          opacity: 1;
+        }
+      }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
+      .modal-content {
+        background-color: white;
+        margin: 5% auto;
+        padding: 30px;
+        border-radius: 20px;
+        width: 90%;
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        animation: slideIn 0.3s;
+      }
 
-        .modal-header h2 {
-            color: #333;
-            font-size: 24px;
-            margin: 0;
+      @keyframes slideIn {
+        from {
+          transform: translateY(-50px);
+          opacity: 0;
         }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
 
-        .close-btn {
-            font-size: 32px;
-            color: #adb5bd;
-            cursor: pointer;
-            border: none;
-            background: none;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            line-height: 1;
-        }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+      }
 
-        .close-btn:hover {
-            color: #495057;
-        }
+      .modal-header h2 {
+        color: #333;
+        font-size: 24px;
+        margin: 0;
+      }
 
-        .group-list {
-            list-style: none;
-            padding: 0;
-            margin: 20px 0;
-        }
+      .close-btn {
+        font-size: 32px;
+        color: #adb5bd;
+        cursor: pointer;
+        border: none;
+        background: none;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        line-height: 1;
+      }
 
-        .group-item {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            transition: all 0.2s;
-        }
+      .close-btn:hover {
+        color: #495057;
+      }
 
-        .group-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
+      .group-list {
+        list-style: none;
+        padding: 0;
+        margin: 20px 0;
+      }
 
-        .group-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
+      .group-item {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+        transition: all 0.2s;
+      }
 
-        .group-name {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-        }
+      .group-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
 
-        .group-actions {
-            display: flex;
-            gap: 8px;
-        }
+      .group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
 
-        .small-btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+      .group-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+      }
 
-        .edit-group-btn {
-            background: #4c6ef5;
-            color: white;
-        }
+      .group-actions {
+        display: flex;
+        gap: 8px;
+      }
 
-        .edit-group-btn:hover {
-            background: #3b5bdb;
-        }
+      .small-btn {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
 
-        .delete-group-btn {
-            background: #ff6b6b;
-            color: white;
-        }
+      .edit-group-btn {
+        background: #4c6ef5;
+        color: white;
+      }
 
-        .delete-group-btn:hover {
-            background: #ee5a52;
-        }
+      .edit-group-btn:hover {
+        background: #3b5bdb;
+      }
 
-        .group-members {
-            font-size: 14px;
-            color: #868e96;
-            margin-top: 8px;
-        }
+      .delete-group-btn {
+        background: #ff6b6b;
+        color: white;
+      }
 
-        .member-badge {
-            display: inline-block;
-            background: #e9ecef;
-            padding: 4px 8px;
-            border-radius: 6px;
-            margin-right: 6px;
-            margin-bottom: 6px;
-            font-size: 13px;
-        }
+      .delete-group-btn:hover {
+        background: #ee5a52;
+      }
 
-        .add-group-section {
-            background: #f1f3f5;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
+      .group-members {
+        font-size: 14px;
+        color: #868e96;
+        margin-top: 8px;
+      }
 
-        .group-input-row {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
+      .member-badge {
+        display: inline-block;
+        background: #e9ecef;
+        padding: 4px 8px;
+        border-radius: 6px;
+        margin-right: 6px;
+        margin-bottom: 6px;
+        font-size: 13px;
+      }
 
-        .group-input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 15px;
-        }
+      .add-group-section {
+        background: #f1f3f5;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+      }
 
-        .group-input:focus {
-            outline: none;
-            border-color: #4c6ef5;
-        }
+      .group-input-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
 
-        .add-member-btn {
-            padding: 10px 20px;
-            background: #51cf66;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            cursor: pointer;
-        }
+      .group-input {
+        flex: 1;
+        padding: 10px 14px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 15px;
+      }
 
-        .add-member-btn:hover {
-            background: #40c057;
-        }
+      .group-input:focus {
+        outline: none;
+        border-color: #4c6ef5;
+      }
 
-        .temp-members {
-            margin-top: 10px;
-            min-height: 30px;
-        }
+      .add-member-btn {
+        padding: 10px 20px;
+        background: #51cf66;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        cursor: pointer;
+      }
 
-        .temp-member {
-            display: inline-block;
-            background: white;
-            padding: 6px 12px;
-            border-radius: 8px;
-            margin-right: 8px;
-            margin-bottom: 8px;
-            font-size: 14px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
+      .add-member-btn:hover {
+        background: #40c057;
+      }
 
-        .remove-temp-member {
-            margin-left: 8px;
-            color: #ff6b6b;
-            cursor: pointer;
-            font-weight: bold;
-        }
+      .temp-members {
+        margin-top: 10px;
+        min-height: 30px;
+      }
 
-        .create-group-btn {
-            width: 100%;
-            padding: 12px;
-            background: #4c6ef5;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+      .temp-member {
+        display: inline-block;
+        background: white;
+        padding: 6px 12px;
+        border-radius: 8px;
+        margin-right: 8px;
+        margin-bottom: 8px;
+        font-size: 14px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
 
-        .create-group-btn:hover {
-            background: #3b5bdb;
-        }
+      .remove-temp-member {
+        margin-left: 8px;
+        color: #ff6b6b;
+        cursor: pointer;
+        font-weight: bold;
+      }
 
-        .select-group-modal .group-item {
-            cursor: pointer;
-        }
+      .create-group-btn {
+        width: 100%;
+        padding: 12px;
+        background: #4c6ef5;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 10px;
+      }
 
-        .select-group-modal .group-item:hover {
-            background: #e7f5ff;
-        }
+      .create-group-btn:hover {
+        background: #3b5bdb;
+      }
+
+      .select-group-modal .group-item {
+        cursor: pointer;
+      }
+
+      .select-group-modal .group-item:hover {
+        background: #e7f5ff;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1>📋 T 명부 관리</h1>
-        
-        <div class="input-section">
-            <input type="text" id="nameInput" placeholder="이름을 입력하세요" />
-            <button class="add-btn" onclick="addPerson()">추가</button>
-        </div>
+      <h1>📋 T 명부 관리</h1>
 
-        <div class="button-group">
-            <button class="install-btn" id="installBtn" onclick="installApp()">📲 앱 설치</button>
-            <button class="group-btn" onclick="openGroupModal()">👥 조 관리</button>
-            <button class="paste-btn" onclick="openSelectGroupModal()">📋 조 붙여넣기</button>
-            <button class="share-btn" onclick="shareData()">📤 공유</button>
-            <button class="reset-btn" onclick="resetAll()">🗑️ 초기화</button>
-        </div>
+      <div class="input-section">
+        <input type="text" id="nameInput" placeholder="이름을 입력하세요" />
+        <button class="add-btn" onclick="addPerson()">추가</button>
+      </div>
 
-        <ul class="roster-list" id="rosterList">
-            <div class="empty-state">명부가 비어있습니다. 이름을 추가해주세요.</div>
-        </ul>
+      <div class="button-group">
+        <button class="install-btn" id="installBtn" onclick="installApp()">
+          📲 앱 설치
+        </button>
+        <button class="group-btn" onclick="openGroupModal()">👥 조 관리</button>
+        <button class="paste-btn" onclick="openSelectGroupModal()">
+          📋 조 붙여넣기
+        </button>
+        <button class="share-btn" onclick="shareData()">📤 공유</button>
+        <button class="reset-btn" onclick="resetAll()">🗑️ 초기화</button>
+      </div>
 
-        <div class="stats">
-            <div class="stat-item">
-                <div class="stat-value" id="totalPeople">0</div>
-                <div class="stat-label">총 인원</div>
-            </div>
-            <div class="stat-item">
-                <div class="stat-value" id="totalCount">0</div>
-                <div class="stat-label">총 합계</div>
-            </div>
+      <ul class="roster-list" id="rosterList">
+        <div class="empty-state">명부가 비어있습니다. 이름을 추가해주세요.</div>
+      </ul>
+
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-value" id="totalPeople">0</div>
+          <div class="stat-label">총 인원</div>
         </div>
+        <div class="stat-item">
+          <div class="stat-value" id="totalCount">0</div>
+          <div class="stat-label">총 합계</div>
+        </div>
+      </div>
     </div>
 
     <!-- 조 관리 모달 -->
     <div id="groupModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>👥 조 관리</h2>
-                <button class="close-btn" onclick="closeGroupModal()">&times;</button>
-            </div>
-
-            <div class="add-group-section">
-                <h3 style="margin-bottom: 15px; color: #333;">새 조 추가</h3>
-                <div class="group-input-row">
-                    <input type="text" id="groupNameInput" class="group-input" placeholder="조 이름 (예: 1조, A팀)" />
-                </div>
-                <div class="group-input-row">
-                    <input type="text" id="memberNameInput" class="group-input" placeholder="멤버 이름" />
-                    <button class="add-member-btn" onclick="addTempMember()">+ 추가</button>
-                </div>
-                <div class="temp-members" id="tempMembers"></div>
-                <button class="create-group-btn" onclick="createGroup()">✓ 조 생성</button>
-            </div>
-
-            <h3 style="margin: 20px 0 15px; color: #333;">저장된 조 목록</h3>
-            <ul class="group-list" id="groupList"></ul>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>👥 조 관리</h2>
+          <button class="close-btn" onclick="closeGroupModal()">&times;</button>
         </div>
+
+        <div class="add-group-section">
+          <h3 style="margin-bottom: 15px; color: #333">새 조 추가</h3>
+          <div class="group-input-row">
+            <input
+              type="text"
+              id="groupNameInput"
+              class="group-input"
+              placeholder="조 이름 (예: 1조, A팀)" />
+          </div>
+          <div class="group-input-row">
+            <input
+              type="text"
+              id="memberNameInput"
+              class="group-input"
+              placeholder="멤버 이름" />
+            <button class="add-member-btn" onclick="addTempMember()">
+              + 추가
+            </button>
+          </div>
+          <div class="temp-members" id="tempMembers"></div>
+          <button class="create-group-btn" onclick="createGroup()">
+            ✓ 조 생성
+          </button>
+        </div>
+
+        <h3 style="margin: 20px 0 15px; color: #333">저장된 조 목록</h3>
+        <ul class="group-list" id="groupList"></ul>
+      </div>
     </div>
 
     <!-- 조 선택 모달 -->
     <div id="selectGroupModal" class="modal select-group-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>📋 조 선택</h2>
-                <button class="close-btn" onclick="closeSelectGroupModal()">&times;</button>
-            </div>
-            <p style="color: #868e96; margin-bottom: 20px;">붙여넣을 조를 선택하세요</p>
-            <ul class="group-list" id="selectGroupList"></ul>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>📋 조 선택</h2>
+          <button class="close-btn" onclick="closeSelectGroupModal()">
+            &times;
+          </button>
         </div>
+        <p style="color: #868e96; margin-bottom: 20px">
+          붙여넣을 조를 선택하세요
+        </p>
+        <ul class="group-list" id="selectGroupList"></ul>
+      </div>
     </div>
 
     <script>
-        let roster = [];
-        let groups = [];
-        let tempMembers = [];
+      let roster = [];
+      let groups = [];
+      let tempMembers = [];
 
-        // localStorage에서 데이터 불러오기
-        function loadData() {
-            const saved = localStorage.getItem('rosterData');
-            if (saved) {
-                roster = JSON.parse(saved);
-            }
-            const savedGroups = localStorage.getItem('groupsData');
-            if (savedGroups) {
-                groups = JSON.parse(savedGroups);
-            }
+      // localStorage에서 데이터 불러오기
+      function loadData() {
+        const saved = localStorage.getItem("rosterData");
+        if (saved) {
+          roster = JSON.parse(saved);
+        }
+        const savedGroups = localStorage.getItem("groupsData");
+        if (savedGroups) {
+          groups = JSON.parse(savedGroups);
+        }
+      }
+
+      // localStorage에 데이터 저장하기
+      function saveData() {
+        localStorage.setItem("rosterData", JSON.stringify(roster));
+        localStorage.setItem("groupsData", JSON.stringify(groups));
+      }
+
+      function addPerson() {
+        const nameInput = document.getElementById("nameInput");
+        const name = nameInput.value.trim();
+
+        if (name === "") {
+          alert("이름을 입력해주세요.");
+          return;
         }
 
-        // localStorage에 데이터 저장하기
-        function saveData() {
-            localStorage.setItem('rosterData', JSON.stringify(roster));
-            localStorage.setItem('groupsData', JSON.stringify(groups));
+        roster.push({
+          id: Date.now(),
+          name: name,
+          count: 0,
+        });
+
+        nameInput.value = "";
+        saveData();
+        renderRoster();
+      }
+
+      function incrementCount(id) {
+        const person = roster.find((p) => p.id === id);
+        if (person) {
+          person.count++;
+          saveData();
+          renderRoster();
+        }
+      }
+
+      function decrementCount(id) {
+        const person = roster.find((p) => p.id === id);
+        if (person) {
+          person.count--;
+          saveData();
+          renderRoster();
+        }
+      }
+
+      function deletePerson(id) {
+        roster = roster.filter((p) => p.id !== id);
+        saveData();
+        renderRoster();
+      }
+
+      function resetAll() {
+        if (confirm("모든 데이터를 삭제하시겠습니까?")) {
+          roster = [];
+          saveData();
+          renderRoster();
+        }
+      }
+
+      function shareData() {
+        if (roster.length === 0) {
+          alert("공유할 데이터가 없습니다.");
+          return;
         }
 
-        function addPerson() {
-            const nameInput = document.getElementById('nameInput');
-            const name = nameInput.value.trim();
-            
-            if (name === '') {
-                alert('이름을 입력해주세요.');
-                return;
-            }
+        // 텍스트 형식으로 데이터 변환
+        const textData = roster
+          .map((person) => `${person.name} ${person.count}`)
+          .join("\n");
 
-            roster.push({
-                id: Date.now(),
-                name: name,
-                count: 0
+        // 클립보드에 복사
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(textData)
+            .then(() => {
+              alert(
+                "📋 클립보드에 복사되었습니다!\n\n카카오톡이나 다른 앱에 붙여넣기 하세요."
+              );
+            })
+            .catch((err) => {
+              // 클립보드 실패시 폴백
+              fallbackCopy(textData);
             });
+        } else {
+          // 구형 브라우저 대응
+          fallbackCopy(textData);
+        }
+      }
 
-            nameInput.value = '';
-            saveData();
-            renderRoster();
+      function fallbackCopy(text) {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.style.position = "fixed";
+        textarea.style.opacity = "0";
+        document.body.appendChild(textarea);
+        textarea.select();
+
+        try {
+          document.execCommand("copy");
+          alert(
+            "📋 클립보드에 복사되었습니다!\n\n카카오톡이나 다른 앱에 붙여넣기 하세요."
+          );
+        } catch (err) {
+          // 복사 실패시 데이터 보여주기
+          alert("복사할 데이터:\n\n" + text);
         }
 
-        function incrementCount(id) {
-            const person = roster.find(p => p.id === id);
-            if (person) {
-                person.count++;
-                saveData();
-                renderRoster();
-            }
-        }
+        document.body.removeChild(textarea);
+      }
 
-        function decrementCount(id) {
-            const person = roster.find(p => p.id === id);
-            if (person) {
-                person.count--;
-                saveData();
-                renderRoster();
-            }
-        }
+      function renderRoster() {
+        const rosterList = document.getElementById("rosterList");
 
-        function deletePerson(id) {
-            roster = roster.filter(p => p.id !== id);
-            saveData();
-            renderRoster();
-        }
-
-        function resetAll() {
-            if (confirm('모든 데이터를 삭제하시겠습니까?')) {
-                roster = [];
-                saveData();
-                renderRoster();
-            }
-        }
-
-        function shareData() {
-            if (roster.length === 0) {
-                alert('공유할 데이터가 없습니다.');
-                return;
-            }
-
-            // 텍스트 형식으로 데이터 변환
-            const textData = roster.map(person => `${person.name} ${person.count}`).join('\n');
-            
-            // 클립보드에 복사
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(textData)
-                    .then(() => {
-                        alert('📋 클립보드에 복사되었습니다!\n\n카카오톡이나 다른 앱에 붙여넣기 하세요.');
-                    })
-                    .catch(err => {
-                        // 클립보드 실패시 폴백
-                        fallbackCopy(textData);
-                    });
-            } else {
-                // 구형 브라우저 대응
-                fallbackCopy(textData);
-            }
-        }
-
-        function fallbackCopy(text) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed';
-            textarea.style.opacity = '0';
-            document.body.appendChild(textarea);
-            textarea.select();
-            
-            try {
-                document.execCommand('copy');
-                alert('📋 클립보드에 복사되었습니다!\n\n카카오톡이나 다른 앱에 붙여넣기 하세요.');
-            } catch (err) {
-                // 복사 실패시 데이터 보여주기
-                alert('복사할 데이터:\n\n' + text);
-            }
-            
-            document.body.removeChild(textarea);
-        }
-
-        function renderRoster() {
-            const rosterList = document.getElementById('rosterList');
-            
-            if (roster.length === 0) {
-                rosterList.innerHTML = '<div class="empty-state">명부가 비어있습니다. 이름을 추가해주세요.</div>';
-            } else {
-                rosterList.innerHTML = roster.map((person, index) => `
+        if (roster.length === 0) {
+          rosterList.innerHTML =
+            '<div class="empty-state">명부가 비어있습니다. 이름을 추가해주세요.</div>';
+        } else {
+          rosterList.innerHTML = roster
+            .map(
+              (person, index) => `
                     <li class="roster-item" draggable="true" data-id="${person.id}" data-index="${index}">
                         <div style="display: flex; align-items: center; flex: 1;">
                             <div class="drag-handle">⋮⋮</div>
@@ -870,372 +911,488 @@
                             <button class="delete-btn" onclick="deletePerson(${person.id})">✕</button>
                         </div>
                     </li>
-                `).join('');
-                
-                // 드래그 이벤트 리스너 추가
-                addDragListeners();
-            }
+                `
+            )
+            .join("");
 
-            updateStats();
+          // 드래그 이벤트 리스너 추가
+          addDragListeners();
         }
 
-        function updateStats() {
-            document.getElementById('totalPeople').textContent = roster.length;
-            const totalCount = roster.reduce((sum, person) => sum + person.count, 0);
-            document.getElementById('totalCount').textContent = totalCount;
+        updateStats();
+      }
+
+      function updateStats() {
+        document.getElementById("totalPeople").textContent = roster.length;
+        const totalCount = roster.reduce(
+          (sum, person) => sum + person.count,
+          0
+        );
+        document.getElementById("totalCount").textContent = totalCount;
+      }
+
+      // 조 관리 기능
+      function openGroupModal() {
+        document.getElementById("groupModal").style.display = "block";
+        renderGroupList();
+        tempMembers = [];
+        renderTempMembers();
+      }
+
+      function closeGroupModal() {
+        document.getElementById("groupModal").style.display = "none";
+        document.getElementById("groupNameInput").value = "";
+        document.getElementById("memberNameInput").value = "";
+        tempMembers = [];
+        renderTempMembers();
+      }
+
+      function addTempMember() {
+        const input = document.getElementById("memberNameInput");
+        const name = input.value.trim();
+
+        if (name === "") {
+          alert("멤버 이름을 입력해주세요.");
+          return;
         }
 
-        // 조 관리 기능
-        function openGroupModal() {
-            document.getElementById('groupModal').style.display = 'block';
-            renderGroupList();
-            tempMembers = [];
-            renderTempMembers();
-        }
+        tempMembers.push(name);
+        input.value = "";
+        renderTempMembers();
+      }
 
-        function closeGroupModal() {
-            document.getElementById('groupModal').style.display = 'none';
-            document.getElementById('groupNameInput').value = '';
-            document.getElementById('memberNameInput').value = '';
-            tempMembers = [];
-            renderTempMembers();
-        }
+      function removeTempMember(index) {
+        tempMembers.splice(index, 1);
+        renderTempMembers();
+      }
 
-        function addTempMember() {
-            const input = document.getElementById('memberNameInput');
-            const name = input.value.trim();
-            
-            if (name === '') {
-                alert('멤버 이름을 입력해주세요.');
-                return;
-            }
-            
-            tempMembers.push(name);
-            input.value = '';
-            renderTempMembers();
-        }
-
-        function removeTempMember(index) {
-            tempMembers.splice(index, 1);
-            renderTempMembers();
-        }
-
-        function renderTempMembers() {
-            const container = document.getElementById('tempMembers');
-            if (tempMembers.length === 0) {
-                container.innerHTML = '<div style="color: #adb5bd; font-size: 14px;">멤버를 추가해주세요</div>';
-            } else {
-                container.innerHTML = tempMembers.map((name, index) => `
+      function renderTempMembers() {
+        const container = document.getElementById("tempMembers");
+        if (tempMembers.length === 0) {
+          container.innerHTML =
+            '<div style="color: #adb5bd; font-size: 14px;">멤버를 추가해주세요</div>';
+        } else {
+          container.innerHTML = tempMembers
+            .map(
+              (name, index) => `
                     <span class="temp-member">
                         ${name}
                         <span class="remove-temp-member" onclick="removeTempMember(${index})">×</span>
                     </span>
-                `).join('');
-            }
+                `
+            )
+            .join("");
+        }
+      }
+
+      function createGroup() {
+        const groupName = document
+          .getElementById("groupNameInput")
+          .value.trim();
+
+        if (groupName === "") {
+          alert("조 이름을 입력해주세요.");
+          return;
         }
 
-        function createGroup() {
-            const groupName = document.getElementById('groupNameInput').value.trim();
-            
-            if (groupName === '') {
-                alert('조 이름을 입력해주세요.');
-                return;
-            }
-            
-            if (tempMembers.length === 0) {
-                alert('최소 1명 이상의 멤버를 추가해주세요.');
-                return;
-            }
-            
-            groups.push({
-                id: Date.now(),
-                name: groupName,
-                members: [...tempMembers]
-            });
-            
-            saveData();
-            alert(`${groupName}이(가) 생성되었습니다!`);
-            
-            // 입력 필드 초기화
-            document.getElementById('groupNameInput').value = '';
-            tempMembers = [];
-            renderTempMembers();
-            renderGroupList();
+        if (tempMembers.length === 0) {
+          alert("최소 1명 이상의 멤버를 추가해주세요.");
+          return;
         }
 
-        function renderGroupList() {
-            const groupList = document.getElementById('groupList');
-            
-            if (groups.length === 0) {
-                groupList.innerHTML = '<div class="empty-state">생성된 조가 없습니다.</div>';
-            } else {
-                groupList.innerHTML = groups.map(group => `
+        groups.push({
+          id: Date.now(),
+          name: groupName,
+          members: [...tempMembers],
+        });
+
+        saveData();
+        alert(`${groupName}이(가) 생성되었습니다!`);
+
+        // 입력 필드 초기화
+        document.getElementById("groupNameInput").value = "";
+        tempMembers = [];
+        renderTempMembers();
+        renderGroupList();
+      }
+
+      function renderGroupList() {
+        const groupList = document.getElementById("groupList");
+
+        if (groups.length === 0) {
+          groupList.innerHTML =
+            '<div class="empty-state">생성된 조가 없습니다.</div>';
+        } else {
+          groupList.innerHTML = groups
+            .map(
+              (group) => `
                     <li class="group-item">
                         <div class="group-header">
                             <div class="group-name">${group.name}</div>
                             <div class="group-actions">
-                                <button class="small-btn delete-group-btn" onclick="deleteGroup(${group.id})">삭제</button>
+                                <button class="small-btn delete-group-btn" onclick="deleteGroup(${
+                                  group.id
+                                })">삭제</button>
                             </div>
                         </div>
                         <div class="group-members">
-                            ${group.members.map(member => `<span class="member-badge">${member}</span>`).join('')}
+                            ${group.members
+                              .map(
+                                (member) =>
+                                  `<span class="member-badge">${member}</span>`
+                              )
+                              .join("")}
                         </div>
                     </li>
-                `).join('');
-            }
+                `
+            )
+            .join("");
         }
+      }
 
-        function deleteGroup(id) {
-            const group = groups.find(g => g.id === id);
-            if (confirm(`${group.name}을(를) 삭제하시겠습니까?`)) {
-                groups = groups.filter(g => g.id !== id);
-                saveData();
-                renderGroupList();
-            }
+      function deleteGroup(id) {
+        const group = groups.find((g) => g.id === id);
+        if (confirm(`${group.name}을(를) 삭제하시겠습니까?`)) {
+          groups = groups.filter((g) => g.id !== id);
+          saveData();
+          renderGroupList();
         }
+      }
 
-        function openSelectGroupModal() {
-            if (groups.length === 0) {
-                alert('생성된 조가 없습니다. 먼저 조를 생성해주세요.');
-                return;
-            }
-            document.getElementById('selectGroupModal').style.display = 'block';
-            renderSelectGroupList();
+      function openSelectGroupModal() {
+        if (groups.length === 0) {
+          alert("생성된 조가 없습니다. 먼저 조를 생성해주세요.");
+          return;
         }
+        document.getElementById("selectGroupModal").style.display = "block";
+        renderSelectGroupList();
+      }
 
-        function closeSelectGroupModal() {
-            document.getElementById('selectGroupModal').style.display = 'none';
-        }
+      function closeSelectGroupModal() {
+        document.getElementById("selectGroupModal").style.display = "none";
+      }
 
-        function renderSelectGroupList() {
-            const selectList = document.getElementById('selectGroupList');
-            selectList.innerHTML = groups.map(group => `
+      function renderSelectGroupList() {
+        const selectList = document.getElementById("selectGroupList");
+        selectList.innerHTML = groups
+          .map(
+            (group) => `
                 <li class="group-item" onclick="pasteGroup(${group.id})">
                     <div class="group-header">
                         <div class="group-name">${group.name}</div>
-                        <div style="color: #868e96; font-size: 14px;">${group.members.length}명</div>
+                        <div style="color: #868e96; font-size: 14px;">${
+                          group.members.length
+                        }명</div>
                     </div>
                     <div class="group-members">
-                        ${group.members.map(member => `<span class="member-badge">${member}</span>`).join('')}
+                        ${group.members
+                          .map(
+                            (member) =>
+                              `<span class="member-badge">${member}</span>`
+                          )
+                          .join("")}
                     </div>
                 </li>
-            `).join('');
-        }
+            `
+          )
+          .join("");
+      }
 
-        function pasteGroup(groupId) {
-            const group = groups.find(g => g.id === groupId);
-            if (!group) return;
-            
-            // 조의 멤버들을 명부에 추가
-            group.members.forEach(memberName => {
-                roster.push({
-                    id: Date.now() + Math.random(), // 고유 ID 생성
-                    name: memberName,
-                    count: 0
-                });
-            });
-            
-            saveData();
-            renderRoster();
-            closeSelectGroupModal();
-            alert(`${group.name} 멤버들이 추가되었습니다!`);
-        }
+      function pasteGroup(groupId) {
+        const group = groups.find((g) => g.id === groupId);
+        if (!group) return;
 
-        // 모달 외부 클릭시 닫기
-        window.onclick = function(event) {
-            const groupModal = document.getElementById('groupModal');
-            const selectModal = document.getElementById('selectGroupModal');
-            if (event.target === groupModal) {
-                closeGroupModal();
-            }
-            if (event.target === selectModal) {
-                closeSelectGroupModal();
-            }
-        }
-
-        // 드래그 앤 드롭 기능
-        let draggedElement = null;
-        let draggedIndex = null;
-
-        function addDragListeners() {
-            const items = document.querySelectorAll('.roster-item');
-            
-            items.forEach(item => {
-                item.addEventListener('dragstart', handleDragStart);
-                item.addEventListener('dragend', handleDragEnd);
-                item.addEventListener('dragover', handleDragOver);
-                item.addEventListener('drop', handleDrop);
-            });
-        }
-
-        function handleDragStart(e) {
-            draggedElement = this;
-            draggedIndex = parseInt(this.dataset.index);
-            this.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/html', this.innerHTML);
-        }
-
-        function handleDragEnd(e) {
-            this.classList.remove('dragging');
-            
-            // 모든 표시 제거
-            document.querySelectorAll('.roster-item').forEach(item => {
-                item.classList.remove('show-line-top', 'show-line-bottom');
-            });
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            
-            if (this === draggedElement) {
-                return;
-            }
-
-            e.dataTransfer.dropEffect = 'move';
-            
-            // 모든 표시 제거
-            document.querySelectorAll('.roster-item').forEach(item => {
-                item.classList.remove('show-line-top', 'show-line-bottom');
-            });
-
-            const rect = this.getBoundingClientRect();
-            const mouseY = e.clientY;
-            const itemTop = rect.top;
-            const itemBottom = rect.bottom;
-            const itemMiddle = itemTop + (rect.height / 2);
-            
-            // 항목 위쪽 영역 (위 1/4)
-            const topZone = itemTop + (rect.height / 4);
-            // 항목 아래쪽 영역 (아래 1/4)
-            const bottomZone = itemBottom - (rect.height / 4);
-            
-            if (mouseY < topZone) {
-                // 위쪽 드롭존
-                this.classList.add('show-line-top');
-            } else if (mouseY > bottomZone) {
-                // 아래쪽 드롭존
-                this.classList.add('show-line-bottom');
-            } else {
-                // 중간 영역 - 마우스 위치에 따라
-                if (mouseY < itemMiddle) {
-                    this.classList.add('show-line-top');
-                } else {
-                    this.classList.add('show-line-bottom');
-                }
-            }
-        }
-
-        function handleDrop(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            if (draggedElement === this) {
-                return;
-            }
-
-            const currentIndex = parseInt(this.dataset.index);
-            const rect = this.getBoundingClientRect();
-            const mouseY = e.clientY;
-            const itemMiddle = rect.top + (rect.height / 2);
-            
-            // 드롭 위치 결정
-            let newIndex;
-            if (mouseY < itemMiddle) {
-                // 위쪽에 드롭
-                newIndex = currentIndex;
-            } else {
-                // 아래쪽에 드롭
-                newIndex = currentIndex + 1;
-            }
-            
-            console.log('Drag from:', draggedIndex, 'Drop to:', newIndex);
-            
-            // 배열 재정렬
-            if (draggedIndex !== newIndex) {
-                const item = roster[draggedIndex];
-                
-                // 먼저 제거
-                roster.splice(draggedIndex, 1);
-                
-                // 새 위치에 삽입 (인덱스 조정)
-                if (draggedIndex < newIndex) {
-                    roster.splice(newIndex - 1, 0, item);
-                } else {
-                    roster.splice(newIndex, 0, item);
-                }
-                
-                console.log('New order:', roster.map(r => r.name));
-                
-                saveData();
-                renderRoster();
-            }
-        }
-
-        // Enter 키로 추가
-        document.getElementById('nameInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                addPerson();
-            }
+        // 조의 멤버들을 명부에 추가
+        group.members.forEach((memberName) => {
+          roster.push({
+            id: Date.now() + Math.random(), // 고유 ID 생성
+            name: memberName,
+            count: 0,
+          });
         });
 
-        // 멤버 추가 Enter 키 지원
-        document.addEventListener('DOMContentLoaded', function() {
-            const memberInput = document.getElementById('memberNameInput');
-            if (memberInput) {
-                memberInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        addTempMember();
-                    }
-                });
-            }
-        });
-
-        // 페이지 로드시 저장된 데이터 불러오기
-        loadData();
+        saveData();
         renderRoster();
+        closeSelectGroupModal();
+        alert(`${group.name} 멤버들이 추가되었습니다!`);
+      }
 
-        // PWA 설치 버튼 기능
-        let deferredPrompt;
-        const installBtn = document.getElementById('installBtn');
-        
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // 기본 미니 바 방지
-            e.preventDefault();
-            deferredPrompt = e;
-            
-            // 설치 버튼 표시
-            installBtn.classList.add('show');
+      // 모달 외부 클릭시 닫기
+      window.onclick = function (event) {
+        const groupModal = document.getElementById("groupModal");
+        const selectModal = document.getElementById("selectGroupModal");
+        if (event.target === groupModal) {
+          closeGroupModal();
+        }
+        if (event.target === selectModal) {
+          closeSelectGroupModal();
+        }
+      };
+
+      // 드래그 앤 드롭 기능
+      let draggedElement = null;
+      let draggedIndex = null;
+
+      function addDragListeners() {
+        const items = document.querySelectorAll(".roster-item");
+        const rosterList = document.getElementById("rosterList");
+
+        items.forEach((item) => {
+          item.addEventListener("dragstart", handleDragStart);
+          item.addEventListener("dragend", handleDragEnd);
+          item.addEventListener("dragover", handleDragOver);
+          item.addEventListener("drop", handleDrop);
         });
 
-        function installApp() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        console.log('앱 설치됨');
-                        installBtn.classList.remove('show');
-                    }
-                    deferredPrompt = null;
-                });
+        // 리스트 컨테이너에도 이벤트 추가 (빈 공간 처리)
+        rosterList.addEventListener("dragover", handleListDragOver);
+        rosterList.addEventListener("drop", handleListDrop);
+      }
+
+      function handleDragStart(e) {
+        draggedElement = this;
+        draggedIndex = parseInt(this.dataset.index);
+        this.classList.add("dragging");
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/html", this.innerHTML);
+      }
+
+      function handleDragEnd(e) {
+        this.classList.remove("dragging");
+
+        // 모든 표시 제거
+        document.querySelectorAll(".roster-item").forEach((item) => {
+          item.classList.remove("show-line-top", "show-line-bottom");
+        });
+      }
+
+      function handleListDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+
+        // 가장 가까운 항목 찾기
+        const afterElement = getDragAfterElement(this, e.clientY);
+
+        // 모든 표시 제거
+        document.querySelectorAll(".roster-item").forEach((item) => {
+          item.classList.remove("show-line-top", "show-line-bottom");
+        });
+
+        if (afterElement == null) {
+          // 리스트 맨 아래
+          const items = document.querySelectorAll(
+            ".roster-item:not(.dragging)"
+          );
+          if (items.length > 0) {
+            items[items.length - 1].classList.add("show-line-bottom");
+          }
+        } else {
+          // 특정 항목 위
+          afterElement.classList.add("show-line-top");
+        }
+      }
+
+      function getDragAfterElement(container, y) {
+        const draggableElements = [
+          ...container.querySelectorAll(".roster-item:not(.dragging)"),
+        ];
+
+        return draggableElements.reduce(
+          (closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+
+            if (offset < 0 && offset > closest.offset) {
+              return { offset: offset, element: child };
             } else {
-                alert('이미 앱이 설치되어 있거나\n브라우저가 설치를 지원하지 않습니다.\n\n크롬 메뉴 → "홈 화면에 추가"를 이용해주세요.');
+              return closest;
             }
+          },
+          { offset: Number.NEGATIVE_INFINITY }
+        ).element;
+      }
+
+      function handleListDrop(e) {
+        e.preventDefault();
+
+        if (!draggedElement) return;
+
+        const afterElement = getDragAfterElement(this, e.clientY);
+
+        let newIndex;
+        if (afterElement == null) {
+          // 맨 아래에 드롭
+          newIndex = roster.length;
+        } else {
+          // 특정 항목 위에 드롭
+          newIndex = parseInt(afterElement.dataset.index);
         }
 
-        // 이미 설치된 경우 버튼 숨기기
-        window.addEventListener('appinstalled', () => {
-            installBtn.classList.remove('show');
+        console.log("List drop - from:", draggedIndex, "to:", newIndex);
+
+        if (draggedIndex !== newIndex) {
+          const item = roster[draggedIndex];
+          roster.splice(draggedIndex, 1);
+
+          if (draggedIndex < newIndex) {
+            roster.splice(newIndex - 1, 0, item);
+          } else {
+            roster.splice(newIndex, 0, item);
+          }
+
+          console.log(
+            "New order:",
+            roster.map((r) => r.name)
+          );
+          saveData();
+          renderRoster();
+        }
+      }
+
+      function handleDragOver(e) {
+        e.preventDefault();
+        e.stopPropagation(); // 부모 이벤트 막기
+
+        if (this === draggedElement) {
+          return;
+        }
+
+        e.dataTransfer.dropEffect = "move";
+
+        // 모든 표시 제거
+        document.querySelectorAll(".roster-item").forEach((item) => {
+          item.classList.remove("show-line-top", "show-line-bottom");
         });
 
-        // PWA 서비스 워커 등록
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('service-worker.js')
-                    .then(registration => console.log('Service Worker 등록 성공'))
-                    .catch(err => console.log('Service Worker 등록 실패:', err));
-            });
+        const rect = this.getBoundingClientRect();
+        const mouseY = e.clientY;
+        const itemMiddle = rect.top + rect.height / 2;
+
+        if (mouseY < itemMiddle) {
+          this.classList.add("show-line-top");
+        } else {
+          this.classList.add("show-line-bottom");
         }
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (draggedElement === this) {
+          return;
+        }
+
+        const currentIndex = parseInt(this.dataset.index);
+        const rect = this.getBoundingClientRect();
+        const mouseY = e.clientY;
+        const itemMiddle = rect.top + rect.height / 2;
+
+        // 드롭 위치 결정
+        let newIndex;
+        if (mouseY < itemMiddle) {
+          // 위쪽에 드롭
+          newIndex = currentIndex;
+        } else {
+          // 아래쪽에 드롭
+          newIndex = currentIndex + 1;
+        }
+
+        console.log("Drag from:", draggedIndex, "Drop to:", newIndex);
+
+        // 배열 재정렬
+        if (draggedIndex !== newIndex) {
+          const item = roster[draggedIndex];
+
+          // 먼저 제거
+          roster.splice(draggedIndex, 1);
+
+          // 새 위치에 삽입 (인덱스 조정)
+          if (draggedIndex < newIndex) {
+            roster.splice(newIndex - 1, 0, item);
+          } else {
+            roster.splice(newIndex, 0, item);
+          }
+
+          console.log(
+            "New order:",
+            roster.map((r) => r.name)
+          );
+
+          saveData();
+          renderRoster();
+        }
+      }
+
+      // Enter 키로 추가
+      document
+        .getElementById("nameInput")
+        .addEventListener("keypress", function (e) {
+          if (e.key === "Enter") {
+            addPerson();
+          }
+        });
+
+      // 멤버 추가 Enter 키 지원
+      document.addEventListener("DOMContentLoaded", function () {
+        const memberInput = document.getElementById("memberNameInput");
+        if (memberInput) {
+          memberInput.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+              addTempMember();
+            }
+          });
+        }
+      });
+
+      // 페이지 로드시 저장된 데이터 불러오기
+      loadData();
+      renderRoster();
+
+      // PWA 설치 버튼 기능
+      let deferredPrompt;
+      const installBtn = document.getElementById("installBtn");
+
+      window.addEventListener("beforeinstallprompt", (e) => {
+        // 기본 미니 바 방지
+        e.preventDefault();
+        deferredPrompt = e;
+
+        // 설치 버튼 표시
+        installBtn.classList.add("show");
+      });
+
+      function installApp() {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === "accepted") {
+              console.log("앱 설치됨");
+              installBtn.classList.remove("show");
+            }
+            deferredPrompt = null;
+          });
+        } else {
+          alert(
+            '이미 앱이 설치되어 있거나\n브라우저가 설치를 지원하지 않습니다.\n\n크롬 메뉴 → "홈 화면에 추가"를 이용해주세요.'
+          );
+        }
+      }
+
+      // 이미 설치된 경우 버튼 숨기기
+      window.addEventListener("appinstalled", () => {
+        installBtn.classList.remove("show");
+      });
+
+      // PWA 서비스 워커 등록
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("service-worker.js")
+            .then((registration) => console.log("Service Worker 등록 성공"))
+            .catch((err) => console.log("Service Worker 등록 실패:", err));
+        });
+      }
     </script>
-</body>
+  </body>
 </html>

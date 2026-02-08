@@ -270,7 +270,6 @@
         font-weight: 600;
         cursor: pointer;
         transition: background 0.3s;
-        margin-right: 10px;
       }
 
       .share-btn:hover {
@@ -817,7 +816,7 @@
 
       function decrementCount(id) {
         const person = roster.find((p) => p.id === id);
-        if (person) {
+        if (person && person.count > 0) {
           person.count--;
           saveData();
           renderRoster();
@@ -941,10 +940,7 @@
 
       function closeGroupModal() {
         document.getElementById("groupModal").style.display = "none";
-        document.getElementById("groupNameInput").value = "";
-        document.getElementById("memberNameInput").value = "";
-        tempMembers = [];
-        renderTempMembers();
+        resetGroupForm();
       }
 
       function addTempMember() {
@@ -1010,9 +1006,7 @@
         alert(`${groupName}이(가) 생성되었습니다!`);
 
         // 입력 필드 초기화
-        document.getElementById("groupNameInput").value = "";
-        tempMembers = [];
-        renderTempMembers();
+        resetGroupForm();
         renderGroupList();
       }
 
@@ -1030,6 +1024,9 @@
                         <div class="group-header">
                             <div class="group-name">${group.name}</div>
                             <div class="group-actions">
+                                <button class="small-btn edit-group-btn" onclick="editGroup(${
+                                  group.id
+                                })">수정</button>
                                 <button class="small-btn delete-group-btn" onclick="deleteGroup(${
                                   group.id
                                 })">삭제</button>
@@ -1057,6 +1054,70 @@
           saveData();
           renderGroupList();
         }
+      }
+
+      function editGroup(id) {
+        const group = groups.find((g) => g.id === id);
+        if (!group) return;
+
+        // 현재 조 정보를 입력 필드에 채우기
+        document.getElementById("groupNameInput").value = group.name;
+        tempMembers = [...group.members];
+        renderTempMembers();
+
+        // 조 생성 버튼을 수정 버튼으로 변경
+        const createBtn = document.querySelector(".create-group-btn");
+        createBtn.textContent = "✓ 수정 완료";
+        createBtn.onclick = function () {
+          saveEditedGroup(id);
+        };
+
+        // 스크롤 상단으로
+        document
+          .querySelector(".add-group-section")
+          .scrollIntoView({ behavior: "smooth" });
+      }
+
+      function saveEditedGroup(id) {
+        const groupName = document
+          .getElementById("groupNameInput")
+          .value.trim();
+
+        if (groupName === "") {
+          alert("조 이름을 입력해주세요.");
+          return;
+        }
+
+        if (tempMembers.length === 0) {
+          alert("최소 1명 이상의 멤버를 추가해주세요.");
+          return;
+        }
+
+        // 조 정보 업데이트
+        const group = groups.find((g) => g.id === id);
+        if (group) {
+          group.name = groupName;
+          group.members = [...tempMembers];
+
+          saveData();
+          alert(`${groupName}이(가) 수정되었습니다!`);
+
+          // 입력 필드 초기화 및 버튼 원래대로
+          resetGroupForm();
+          renderGroupList();
+        }
+      }
+
+      function resetGroupForm() {
+        document.getElementById("groupNameInput").value = "";
+        document.getElementById("memberNameInput").value = "";
+        tempMembers = [];
+        renderTempMembers();
+
+        // 버튼 원래대로
+        const createBtn = document.querySelector(".create-group-btn");
+        createBtn.textContent = "✓ 조 생성";
+        createBtn.onclick = createGroup;
       }
 
       function openSelectGroupModal() {
